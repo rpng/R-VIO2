@@ -1,0 +1,156 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# IMU Parameters (cf. EuRoC dataset)
+#--------------------------------------------------------------------------------------------
+
+# IMU data rate
+IMU.dps: 200
+
+# IMU sensor noise
+IMU.sigma_g: 1.6968e-04
+IMU.sigma_wg: 1.9393e-05
+IMU.sigma_a: 2.0000e-3
+IMU.sigma_wa: 3.0000e-3
+
+# Gravity
+IMU.nG: 9.8082
+
+# Threshold of small angle [rad] (<.1deg)
+IMU.nSmallAngle: 0.001745329
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters (cf. EuRoC dataset)
+#--------------------------------------------------------------------------------------------
+
+# Camera frame rate
+Camera.fps: 20
+
+# Camera image resolution
+Camera.width: 752
+Camera.height: 480
+
+# Is RGB or not
+Camera.RGB: 0
+
+# Is fisheye or not
+Camera.Fisheye: 0
+
+# Camera intrinsics
+Camera.fx: 458.654
+Camera.fy: 457.296
+Camera.cx: 367.215
+Camera.cy: 248.375
+
+Camera.k1: -0.28340811
+Camera.k2: 0.07395907
+Camera.p1: 0.00019359
+Camera.p2: 1.76187114e-05
+
+# Camera image noise (1/f)
+Camera.sigma_px: 0.002180293
+Camera.sigma_py: 0.002186767
+
+# Camera extrinsics [B:IMU,C0:cam0]
+Camera.T_BC0_GT: !!opencv-matrix # Ground truth
+    rows: 4
+    cols: 4
+    dt: d
+    data: [ 0.0148655429818, -0.999880929698, 0.00414029679422, -0.0216401454975,
+            0.999557249008, 0.0149672133247, 0.025715529948, -0.064676986768,
+           -0.0257744366974, 0.00375618835797, 0.999660727178, 0.00981073058949,
+            0.0, 0.0, 0.0, 1.0]
+
+Camera.T_BC0: !!opencv-matrix # Approximate
+    rows: 4
+    cols: 4
+    dt: d
+    data: [0.0, -1.0, 0.0, 0.0,
+           1.0,  0.0, 0.0, 0.0,
+           0.0,  0.0, 1.0, 0.0,
+           0.0,  0.0, 0.0, 1.0]
+
+# Time shift from camera to IMU [s] (t_imu=t_cam+offset)
+Camera.nTimeOffset_GT: 0
+Camera.nTimeOffset: 0
+
+#--------------------------------------------------------------------------------------------
+# Initialization Parameters (tunable)
+#--------------------------------------------------------------------------------------------
+
+# Skip the "wiggling" phase [s]
+INI.nTimeskip: 0 # MH_01:40, MH_02:30, MH_03:15, MH_04:15, MH_05:15
+
+# Record the result or not
+INI.RecordOutputs: 0
+
+# Use gravity alignment or not
+INI.EnableAlignment: 1
+
+# Use ground truth for calibration or not
+INI.UseGroundTruthCalib: 1
+
+# Thresholds for moving detection [deg,m]
+INI.nAngleThrd: 0.3
+INI.nLengthThrd: 0.01
+
+#--------------------------------------------------------------------------------------------
+# Tracker Parameters (tunable)
+#--------------------------------------------------------------------------------------------
+
+# Number of features per image
+Tracker.nFeatures: 200
+
+# Min. tracking length
+Tracker.nMinTrackingLength: 3
+
+# Max. tracking length
+Tracker.nMaxTrackingLength: 15
+
+# Quality level of features
+Tracker.nQualLvl: 1e-2
+
+# Min. distance between two features
+Tracker.nMinDist: 15
+
+# Max. number of SLAM features (VIO:0, SLAM:50)
+Tracker.nMaxSlamPoints: 0
+
+# Parallax of good feature [deg] (only for SLAM)
+Tracker.nGoodParallax: 3
+
+# Block size of image grid
+Tracker.nBlockSizeX: 150
+Tracker.nBlockSizeY: 120
+
+# Use image filter or not
+Tracker.EnableFilter: 0
+
+# Use histogram equalizer or not
+Tracker.EnableEqualizer: 1
+
+# Number of iterations (RANSAC)
+Tracker.nRansacIter: 16
+
+# Use Sampson error or not (RANSAC)
+Tracker.UseSampson: 1
+
+# Error thresholds for inlier (RANSAC)
+Tracker.nSampsonErrThrd: 1e-6
+Tracker.nAlgebraicErrThrd: 1e-3
+
+#--------------------------------------------------------------------------------------------
+# Displayer Parameters (tunable)
+#--------------------------------------------------------------------------------------------
+
+# Display feature tracking
+Displayer.ShowTrack: 1
+
+# Display feature redetection
+Displayer.ShowNewer: 0
+
+# Size of point
+Displayer.nLandmarkScale: 0.03
+
+# Publishing rate
+Displayer.nLandmarkPubRate: 5

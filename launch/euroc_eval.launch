@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- First, set proper timeskip in rvio2_euroc.yaml -->
+    <!-- Then, set PATH_TO_ROSBAG here and test one by one -->
+
+    <!-- Config file and rosbag path -->
+    <arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V1_01" />
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V1_02" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V1_03" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V2_01" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V2_02" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V2_03" /-->
+
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_01" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_02" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_03" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_04" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_05" /-->
+
+    <node name="rvio2_mono_eval" pkg="rvio2" type="rvio2_mono_eval" args="$(arg config)" output="screen">
+    </node>
+
+</launch>
