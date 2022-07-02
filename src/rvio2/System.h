@@ -86,17 +86,13 @@ private:
     bool mbUseGroundTruthCalib;
 
     bool mbIsInitialized;
-    bool mbFoundLoopClosure;
 
     int mnMaxSlamPoints;
     int mnLocalWindowSize;
 
-    float mnAngleThreshold;
-    float mnLengthThreshold;
-
     float mnGravity;
-
     float mnImuRate;
+
     float mnCamRate;
     float mnCamTimeOffset;
 
@@ -104,6 +100,9 @@ private:
     float msigmaGyroBias;
     float msigmaAccelNoise;
     float msigmaAccelBias;
+
+    float mnAngleThrd;
+    float mnLengthThrd;
 
     Eigen::Matrix3f mRci;
     Eigen::Vector3f mtci;

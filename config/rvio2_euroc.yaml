@@ -79,7 +79,7 @@ Camera.nTimeOffset: 0
 #--------------------------------------------------------------------------------------------
 
 # Skip the "wiggling" phase [s]
-INI.nTimeskip: 0 # MH_01:40, MH_02:30, MH_03:15, MH_04:15, MH_05:15
+INI.nTimeskip: 0 # MH_01:40, MH_02:28, MH_03:15, MH_04:12, MH_05:15
 
 # Record the result or not
 INI.RecordOutputs: 0
@@ -117,7 +117,7 @@ Tracker.nMinDist: 15
 Tracker.nMaxSlamPoints: 0
 
 # Parallax of good feature [deg] (only for SLAM)
-Tracker.nGoodParallax: 3
+Tracker.nGoodParallax: 5
 
 # Block size of image grid
 Tracker.nBlockSizeX: 150

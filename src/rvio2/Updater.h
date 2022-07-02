@@ -100,7 +100,7 @@ private:
                          const Eigen::Vector3f& vk, 
                          Eigen::MatrixXf& Hf, 
                          Eigen::MatrixXf& HG, 
-                         Eigen::MatrixXf& HC, 
+                         Eigen::MatrixXf& HP, 
                          Eigen::MatrixXf& Hk, 
                          Eigen::VectorXf& r);
 
@@ -111,7 +111,7 @@ private:
                          const std::deque<Eigen::Vector3f>& qRevLocalw, 
                          const std::deque<Eigen::Vector3f>& qRevLocalv, 
                          Eigen::MatrixXf& Hf, 
-                         Eigen::MatrixXf& HC, 
+                         Eigen::MatrixXf& HP, 
                          Eigen::MatrixXf& HW, 
                          Eigen::VectorXf& r, 
                          Eigen::Vector3f& xf);
@@ -167,7 +167,7 @@ private:
     float mnImageNoiseSigma;
     float mnImageNoiseSigmaInv;
 
-    Eigen::Matrix2f mRinv;
+    Eigen::Matrix2f mSigmaInv;
 
     Eigen::Matrix3f mRci;
     Eigen::Vector3f mtci;

@@ -82,8 +82,8 @@ private:
 
     bool mbUseSampson;
 
-    float mnSampsonError;
-    float mnAlgebraicError;
+    float mnSampsonThrd;
+    float mnAlgebraicThrd;
 };
 
 } // namespace RVIO2

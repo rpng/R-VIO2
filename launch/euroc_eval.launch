@@ -5,18 +5,18 @@
     <!-- Then, set PATH_TO_ROSBAG here and test one by one -->
 
     <!-- Config file and rosbag path -->
-    <arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V1_01" />
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V1_02" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V1_03" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V2_01" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V2_02" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_V2_03" /-->
+    <arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/V1_01_easy.bag" />
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/V1_02_medium.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/V1_03_difficult.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/V2_01_easy.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/V2_02_medium.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/V2_03_difficult.bag" /-->
 
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_01" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_02" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_03" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_04" /-->
-    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml PATH_TO_MH_05" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/MH_01_easy.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/MH_02_easy.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/MH_03_medium.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/MH_04_difficult.bag" /-->
+    <!--arg name="config" default="$(find rvio2)/config/rvio2_euroc.yaml /home/zheng/ROS/datasets/eth_dataset/euroc/MH_05_difficult.bag" /-->
 
     <node name="rvio2_mono_eval" pkg="rvio2" type="rvio2_mono_eval" args="$(arg config)" output="screen">
     </node>

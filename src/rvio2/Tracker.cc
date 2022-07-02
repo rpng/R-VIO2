@@ -110,7 +110,7 @@ Tracker::~Tracker()
 void Tracker::preprocess(const int nImageId, 
                          const cv::Mat& image, 
                          const Eigen::Matrix3f& RcG, 
-                         const Eigen::Vector3f& tGc)
+                         const Eigen::Vector3f& tcG)
 {
     // Convert to grayscale
     if (image.channels()==3)
@@ -149,12 +149,12 @@ void Tracker::preprocess(const int nImageId,
 
     if (nImageId>0)
     {
-        mRr = RcG*(mlCamOrientations.back().transpose());
         mRx = RcG*(mlCamOrientations.front().transpose());
+        mRr = RcG*(mlCamOrientations.back().transpose());
     }
 
     mlCamOrientations.push_back(RcG);
-    mlCamPositions.push_back(tGc);
+    mlCamPositions.push_back(tcG);
 }
 
 
@@ -453,7 +453,7 @@ void Tracker::VisualTracking(const int nImageId,
 bool Tracker::start(const int nImageId, 
                     const cv::Mat& image, 
                     const Eigen::Matrix3f& RcG, 
-                    const Eigen::Vector3f& tGc, 
+                    const Eigen::Vector3f& tcG, 
                     std::unordered_map<int,Feature*>& mFeatures)
 {
     if (nImageId==0 || mbRestartVT)
@@ -466,7 +466,7 @@ bool Tracker::start(const int nImageId,
     mvFeatPtsToTrack.clear();
     mmFeatTrackingHistory.clear();
 
-    preprocess(nImageId, image, RcG, tGc);
+    preprocess(nImageId, image, RcG, tcG);
 
     int nFeats = mpFeatureDetector->DetectWithSubPix(image, mnMaxFeatsPerImage, 1, mvFeatPtsToTrack);
     if (nFeats==0)
@@ -526,7 +526,7 @@ bool Tracker::start(const int nImageId,
 void Tracker::manage(const int nImageId, 
                      const cv::Mat& image, 
                      const Eigen::Matrix3f& RcG, 
-                     const Eigen::Vector3f& tGc, 
+                     const Eigen::Vector3f& tcG, 
                      const std::unordered_map<int,Feature*>& mFeatures)
 {
     if (!mvFeatInfoForInitSlam.empty())
@@ -607,7 +607,7 @@ void Tracker::manage(const int nImageId,
     mvvFeatMeasForPoseOnly.clear();
     mvFeatMeasForExploration.clear();
 
-    preprocess(nImageId, image, RcG, tGc);
+    preprocess(nImageId, image, RcG, tcG);
 
     mpFeatureDetector->DetectWithSubPix(image, 1.5*mnMaxFeatsPerImage, 1, mvFeatCandidates);
 }
@@ -616,18 +616,18 @@ void Tracker::manage(const int nImageId,
 void Tracker::track(const int nImageId, 
                     const cv::Mat& image, 
                     const Eigen::Matrix3f& RcG, 
-                    const Eigen::Vector3f& tGc, 
+                    const Eigen::Vector3f& tcG, 
                     int nMapPtsNeeded, 
                     std::unordered_map<int,Feature*>& mFeatures)
 {
     if (nImageId==0 || mbRestartVT || mbRefreshVT)
     {
-        if (!start(nImageId, image, RcG, tGc, mFeatures))
+        if (!start(nImageId, image, RcG, tcG, mFeatures))
             return;
     }
     else
     {
-        manage(nImageId, image, RcG, tGc, mFeatures);
+        manage(nImageId, image, RcG, tcG, mFeatures);
 
         VisualTracking(nImageId, image, nMapPtsNeeded, mFeatures);
     }

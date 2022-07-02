@@ -48,13 +48,12 @@ private:
     int mnImageCols;
     int mnImageRows;
 
-    int mnOffsetX;
-    int mnOffsetY;
-
+    int mnBlocks;
     int mnGridCols;
     int mnGridRows;
 
-    int mnBlocks;
+    int mnOffsetX;
+    int mnOffsetY;
 
     float mnBlockSizeX;
     float mnBlockSizeY;

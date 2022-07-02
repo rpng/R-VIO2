@@ -26,13 +26,14 @@ namespace RVIO2
 
 Ransac::Ransac(const cv::FileStorage& fsSettings)
 {
-    mnIterations = fsSettings["Tracker.nRansacIter"];
+    int nIterations = fsSettings["Tracker.nRansacIter"];
+    mnIterations = nIterations<16 ? 16 : nIterations;
 
     const int bUseSampson = fsSettings["Tracker.UseSampson"];
     mbUseSampson = bUseSampson;
 
-    mnSampsonError = fsSettings["Tracker.nSampsonErrThrd"];
-    mnAlgebraicError = fsSettings["Tracker.nAlgebraicErrThrd"];
+    mnSampsonThrd = fsSettings["Tracker.nSampsonErrThrd"];
+    mnAlgebraicThrd = fsSettings["Tracker.nAlgebraicErrThrd"];
 }
 
 
@@ -108,12 +109,12 @@ int Ransac::CountVotes(const Eigen::MatrixXf& Points1,
     {
         if (mbUseSampson)
         {
-            if (SampsonError(Points1.col(idx), Points2.col(idx), E)<mnSampsonError)
+            if (SampsonError(Points1.col(idx), Points2.col(idx), E)<mnSampsonThrd)
                 nVotes++;
         }
         else
         {
-            if (AlgebraicError(Points1.col(idx), Points2.col(idx), E)<mnAlgebraicError)
+            if (AlgebraicError(Points1.col(idx), Points2.col(idx), E)<mnAlgebraicThrd)
                 nVotes++;
         }
     }
@@ -177,7 +178,7 @@ void Ransac::FindInliers(const Eigen::MatrixXf& Points1,
         if (mbUseSampson)
         {
             float nError = SampsonError(Points1.col(idx), Points2.col(idx), WinnerE);
-            if (nError>mnSampsonError || std::isinf(nError) || std::isnan(nError))
+            if (nError>mnSampsonThrd || std::isinf(nError) || std::isnan(nError))
             {
                 // Mark as outlier
                 vInlierFlags.at(idx) = 0;
@@ -187,7 +188,7 @@ void Ransac::FindInliers(const Eigen::MatrixXf& Points1,
         else
         {
             float nError = AlgebraicError(Points1.col(idx), Points2.col(idx), WinnerE);
-            if (nError>mnAlgebraicError || std::isinf(nError) || std::isnan(nError))
+            if (nError>mnAlgebraicThrd || std::isinf(nError) || std::isnan(nError))
             {
                 // Mark as outlier
                 vInlierFlags.at(idx) = 0;

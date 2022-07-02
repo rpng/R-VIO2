@@ -43,11 +43,11 @@ Propagator::Propagator(const cv::FileStorage& fsSettings)
     mnAccelNoiseSigma = fsSettings["IMU.sigma_a"];
     mnAccelRandomWalkSigma = fsSettings["IMU.sigma_wa"];
 
-    ImuNoiseMatrix.setIdentity();
-    ImuNoiseMatrix.block<3,3>(0,0) *= pow(mnGyroNoiseSigma,2);
-    ImuNoiseMatrix.block<3,3>(3,3) *= pow(mnGyroRandomWalkSigma,2);
-    ImuNoiseMatrix.block<3,3>(6,6) *= pow(mnAccelNoiseSigma,2);
-    ImuNoiseMatrix.block<3,3>(9,9) *= pow(mnAccelRandomWalkSigma,2);
+    mSigma.setIdentity();
+    mSigma.block<3,3>(0,0) *= pow(mnGyroNoiseSigma,2);
+    mSigma.block<3,3>(3,3) *= pow(mnGyroRandomWalkSigma,2);
+    mSigma.block<3,3>(6,6) *= pow(mnAccelNoiseSigma,2);
+    mSigma.block<3,3>(9,9) *= pow(mnAccelRandomWalkSigma,2);
 
     const int nMaxTrackingLength = fsSettings["Tracker.nMaxTrackingLength"];
     mnLocalWindowSize = nMaxTrackingLength-1;
@@ -126,7 +126,7 @@ void Propagator::CreateNewFactor(const std::vector<ImuData>& vImuData,
         G.block<3,3>(15,9) = I;
 
         Phi = I18+dt*F;
-        Q = dt*G*ImuNoiseMatrix*(G.transpose());
+        Q = dt*G*mSigma*(G.transpose());
 
         P = Phi*P*(Phi.transpose())+Q;
         P = .5*(P+P.transpose()).eval();

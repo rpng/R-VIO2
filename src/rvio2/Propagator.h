@@ -90,7 +90,7 @@ private:
     float mnAccelNoiseSigma;
     float mnAccelRandomWalkSigma;
 
-    Eigen::Matrix<float,12,12> ImuNoiseMatrix;
+    Eigen::Matrix<float,12,12> mSigma;
 };
 
 } // namespace RVIO2

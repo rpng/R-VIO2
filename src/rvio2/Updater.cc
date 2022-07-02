@@ -38,8 +38,8 @@ Updater::Updater(const cv::FileStorage& fsSettings)
     mnImageNoiseSigma = std::max(nImageNoiseSigmaX, nImageNoiseSigmaY);
     mnImageNoiseSigmaInv = 1./mnImageNoiseSigma;
 
-    mRinv << pow(mnImageNoiseSigmaInv,2), 0,
-             0, pow(mnImageNoiseSigmaInv,2);
+    mSigmaInv << pow(mnImageNoiseSigmaInv,2), 0,
+                 0, pow(mnImageNoiseSigmaInv,2);
 
     mFeatPub = mUpdaterNode.advertise<visualization_msgs::Marker>("/rvio2/landmarks", 1);
     mnPubRate = fsSettings["Displayer.nLandmarkPubRate"];
@@ -86,7 +86,8 @@ int Updater::triangulate(const int nTrackLength,
     Eigen::Vector3f HTRinve, new_HTRinve;
     float cost, new_cost;
 
-    InitLM(phi, psi, rho, nTrackLength, vRevFeatMeas, vRevRelCamPoses, HTRinvH, HTRinve, cost);
+    InitLM(phi, psi, rho, nTrackLength, vRevFeatMeas, vRevRelCamPoses, 
+           HTRinvH, HTRinve, cost);
 
     while (nIter<maxIter)
     {
@@ -100,7 +101,8 @@ int Updater::triangulate(const int nTrackLength,
         if (dpfinv.norm()<1e-6)
             break;
 
-        InitLM(new_phi, new_psi, new_rho, nTrackLength, vRevFeatMeas, vRevRelCamPoses, new_HTRinvH, new_HTRinve, new_cost);
+        InitLM(new_phi, new_psi, new_rho, nTrackLength, vRevFeatMeas, vRevRelCamPoses, 
+               new_HTRinvH, new_HTRinve, new_cost);
 
         if (new_cost<cost)
         {
@@ -168,9 +170,6 @@ void Updater::InitLM(const float phi,
         Eigen::Vector3f tc = vRevRelCamPoses.at(i).tail(3);
         Eigen::Vector3f h = Rc*epfinv+rho*tc;
 
-        Eigen::Vector2f e;
-        e << z.x-h(0)/h(2), z.y-h(1)/h(2);
-
         Eigen::Matrix<float,2,3> Hproj;
         Hproj << 1./h(2), 0, -h(0)/pow(h(2),2),
                  0, 1./h(2), -h(1)/pow(h(2),2);
@@ -178,9 +177,12 @@ void Updater::InitLM(const float phi,
         Eigen::Matrix<float,2,3> H;
         H << Hproj*Rc*Jang, Hproj*tc;
 
-        HTRinvH += H.transpose()*mRinv*H;
-        HTRinve += H.transpose()*mRinv*e;
-        cost += e.dot(mRinv*e);
+        Eigen::Vector2f e;
+        e << z.x-h(0)/h(2), z.y-h(1)/h(2);
+
+        HTRinvH += H.transpose()*mSigmaInv*H;
+        HTRinve += H.transpose()*mSigmaInv*e;
+        cost += e.dot(mSigmaInv*e);
     }
 }
 
@@ -223,7 +225,7 @@ bool Updater::CreateNewFactor(std::pair<int,Type>& pFeatInfo,
                               const std::deque<Eigen::Vector3f>& qRevLocalw, 
                               const std::deque<Eigen::Vector3f>& qRevLocalv, 
                               Eigen::MatrixXf& Hf, 
-                              Eigen::MatrixXf& HC, 
+                              Eigen::MatrixXf& HP, 
                               Eigen::MatrixXf& HW, 
                               Eigen::VectorXf& r, 
                               Eigen::Vector3f& xf)
@@ -271,12 +273,12 @@ bool Updater::CreateNewFactor(std::pair<int,Type>& pFeatInfo,
              cos(phi), 0,
             -sin(phi)*cos(psi), -cos(phi)*sin(psi);
 
-    SqrMatrixType tempHf, tempHC, tempHW;
+    SqrMatrixType tempHf, tempHP, tempHW;
     Eigen::VectorXf tempr;
 
     tempr.setZero(2*nTrackLength);
     tempHf.setZero(2*nTrackLength,3);
-    tempHC.setZero(2*nTrackLength,7);
+    tempHP.setZero(2*nTrackLength,7);
 
     if (type!=POSE_ONLY)
         tempHW.setZero(2*nTrackLength,6*(nTrackLength-1));
@@ -351,7 +353,7 @@ bool Updater::CreateNewFactor(std::pair<int,Type>& pFeatInfo,
             subHtci = Hproj*rho*(I-Rc);
         }
 
-        tempHC.block(2*i,0,2,7) << subHqci, subHtci, subHt;
+        tempHP.block(2*i,0,2,7) << subHqci, subHtci, subHt;
     }
 
     int M = 2*nTrackLength;
@@ -376,7 +378,7 @@ bool Updater::CreateNewFactor(std::pair<int,Type>& pFeatInfo,
         {
             GR.makeGivens(tempHf(m-1,n), tempHf(m,n));
             tempHf.applyOnTheLeft(m-1,m,GR.adjoint());
-            tempHC.applyOnTheLeft(m-1,m,GR.adjoint());
+            tempHP.applyOnTheLeft(m-1,m,GR.adjoint());
             tempHW.applyOnTheLeft(m-1,m,GR.adjoint());
             tempr.applyOnTheLeft(m-1,m,GR.adjoint());
             tempHf(m,n) = 0;
@@ -386,13 +388,13 @@ bool Updater::CreateNewFactor(std::pair<int,Type>& pFeatInfo,
     if (type==INIT_SLAM)
     {
         Hf = tempHf;
-        HC = tempHC;
+        HP = tempHP;
         HW = tempHW;
         r = tempr;
     }
     else
     {
-        HC = tempHC.bottomRows(M-N);
+        HP = tempHP.bottomRows(M-N);
         HW = tempHW.bottomRows(M-N);
         r = tempr.tail(M-N);
     }
@@ -410,14 +412,14 @@ void Updater::CreateNewFactor(const cv::Point2f& z,
                               const Eigen::Vector3f& vk, 
                               Eigen::MatrixXf& Hf, 
                               Eigen::MatrixXf& HG, 
-                              Eigen::MatrixXf& HC, 
+                              Eigen::MatrixXf& HP, 
                               Eigen::MatrixXf& Hk, 
                               Eigen::VectorXf& r)
 {
     r.resize(2);
     Hf.resize(2,3);
     HG.resize(2,9);
-    HC.resize(2,7);
+    HP.resize(2,7);
     Hk.resize(2,15);
 
     Eigen::Matrix3f RG = QuatToRot(xG.head(4));
@@ -444,7 +446,7 @@ void Updater::CreateNewFactor(const cv::Point2f& z,
 
     Hf = HR*RkG;
     HG << HR*Rk*SkewSymm(RG*pfG_fej), HR*Rk, Eigen::MatrixXf::Zero(2,3);
-    HC << Hproj*SkewSymm(mRci*pfk_fej), Hproj, HR*SkewSymm(pfk_fej)*wk-HR*vk;
+    HP << Hproj*SkewSymm(mRci*pfk_fej), Hproj, HR*SkewSymm(pfk_fej)*wk-HR*vk;
     Hk << HR*SkewSymm(pfk_fej), -HR*Rk, Eigen::MatrixXf::Zero(2,9);
 }
 
@@ -567,7 +569,8 @@ void Updater::update(const int nImageId,
 
     Eigen::MatrixXf NavSRinv;
     NavSRinv.setIdentity(9+7+nDimOfWinSR,9+7+nDimOfWinSR);
-    LocalFactor.bottomRightCorner(9+7+nDimOfWinSR,9+7+nDimOfWinSR+1).leftCols(9+7+nDimOfWinSR).triangularView<Eigen::Upper>().solveInPlace(NavSRinv);
+    LocalFactor.bottomRightCorner(9+7+nDimOfWinSR,9+7+nDimOfWinSR+1).leftCols(9+7+nDimOfWinSR)
+               .triangularView<Eigen::Upper>().solveInPlace(NavSRinv);
 
     if (!vFeatMeasForExploration.empty())
     {
@@ -603,21 +606,21 @@ void Updater::update(const int nImageId,
             Feature* pFeature = mFeatures.at(id);
 
             // Get feature index
-            std::vector<int>::const_iterator vit = std::find_if(vActiveFeatureIDs.begin(), vActiveFeatureIDs.end(), 
-                                                                [id](const int& val){return val==id;});
+            auto vit = std::find_if(vActiveFeatureIDs.begin(), vActiveFeatureIDs.end(), [id](const int& val){return val==id;});
             int idx = vit-vActiveFeatureIDs.begin();
             vFeatureStatuses.at(idx) = 1;
 
             Eigen::Vector3f pfG = pFeature->Position();
             Eigen::Vector3f pfG_fej = pFeature->FejPosition();
 
-            Eigen::MatrixXf tempHf, tempHG, tempHC, tempHk;
+            Eigen::MatrixXf tempHf, tempHG, tempHP, tempHk;
             Eigen::VectorXf tempr;
-            CreateNewFactor((*vitMeas).second, pfG, pfG_fej, xG, xk, wk, vk, tempHf, tempHG, tempHC, tempHk, tempr);
+            CreateNewFactor((*vitMeas).second, pfG, pfG_fej, xG, xk, wk, vk, 
+                            tempHf, tempHG, tempHP, tempHk, tempr);
 
             Eigen::MatrixXf tempH;
             tempH.setZero(2,9+7+nDimOfWinSR);
-            tempH.leftCols(16) << tempHG, tempHC;
+            tempH.leftCols(16) << tempHG, tempHP;
             tempH.rightCols(15).swap(tempHk);
 
             float val = chi2(tempH, tempr, NavSRinv);
@@ -701,11 +704,11 @@ void Updater::update(const int nImageId,
 
             std::vector<cv::Point2f> vRevFeatMeas((*vitMeas).rbegin(), (*vitMeas).rend());
 
-            Eigen::MatrixXf tempHf, tempHC, tempHW;
+            Eigen::MatrixXf tempHf, tempHP, tempHW;
             Eigen::VectorXf tempr;
             Eigen::Vector3f xf;
-            if (!CreateNewFactor(*vitInfo, vRevFeatMeas, vRevRelImuPoses, vRevRelCamPoses, 
-                                 qRevLocalw, qRevLocalv, tempHf, tempHC, tempHW, tempr, xf))
+            if (!CreateNewFactor(*vitInfo, vRevFeatMeas, vRevRelImuPoses, vRevRelCamPoses, qRevLocalw, qRevLocalv, 
+                                 tempHf, tempHP, tempHW, tempr, xf))
                 continue;
 
             int M = tempHW.rows();
@@ -718,7 +721,7 @@ void Updater::update(const int nImageId,
                 Eigen::MatrixXf tempHx;
                 Eigen::VectorXf temprx;
                 tempHx.setZero(M-3,7+nDimOfWinSR);
-                tempHx.leftCols(7+N) << tempHC.bottomRows(M-3), tempHW.bottomRows(M-3);
+                tempHx.leftCols(7+N) << tempHP.bottomRows(M-3), tempHW.bottomRows(M-3);
                 temprx = tempr.tail(M-3);
 
                 float val = chi2(tempHx, temprx, NavSRinv.bottomRightCorner(7+nDimOfWinSR,7+nDimOfWinSR));
@@ -753,7 +756,7 @@ void Updater::update(const int nImageId,
 
                 nNewPoints++;
                 Hf.conservativeResizeLike(Eigen::MatrixXf::Zero(3*nNewPoints,7+nDimOfWinSR+3*nNewPoints));
-                Hf.bottomLeftCorner(3,7+N) << tempHC.topRows(3), tempHW.topRows(3);
+                Hf.bottomLeftCorner(3,7+N) << tempHP.topRows(3), tempHW.topRows(3);
                 Hf.bottomRightCorner(3,3) = tempHf.topRows(3);
 
                 rf.conservativeResize(3*nNewPoints);
@@ -768,7 +771,7 @@ void Updater::update(const int nImageId,
             {
                 Eigen::MatrixXf tempH;
                 tempH.setZero(M,7+nDimOfWinSR);
-                tempH.leftCols(7+N) << tempHC, tempHW;
+                tempH.leftCols(7+N) << tempHP, tempHW;
 
                 float val = chi2(tempH, tempr, NavSRinv.bottomRightCorner(7+nDimOfWinSR,7+nDimOfWinSR));
                 if (val<CHI2_THRESHOLD[M-1])
@@ -876,11 +879,11 @@ void Updater::update(const int nImageId,
 
             std::vector<cv::Point2f> vRevFeatMeas((*vitMeas).rbegin(), (*vitMeas).rend());
 
-            Eigen::MatrixXf tempHf, tempHC, tempHW;
+            Eigen::MatrixXf tempHf, tempHP, tempHW;
             Eigen::VectorXf tempr;
             Eigen::Vector3f xf;
-            if (!CreateNewFactor(*vitInfo, vRevFeatMeas, vRevRelImuPoses, vRevRelCamPoses, 
-                                 qRevLocalw, qRevLocalv, tempHf, tempHC, tempHW, tempr, xf))
+            if (!CreateNewFactor(*vitInfo, vRevFeatMeas, vRevRelImuPoses, vRevRelCamPoses, qRevLocalw, qRevLocalv, 
+                                 tempHf, tempHP, tempHW, tempr, xf))
                 continue;
 
             int M = tempHW.rows();
@@ -890,11 +893,11 @@ void Updater::update(const int nImageId,
             tempH.setZero(M,7+nDimOfWinSR);
             if (type==POSE_ONLY)
             {
-                tempH.leftCols(7).swap(tempHC);
+                tempH.leftCols(7).swap(tempHP);
                 tempH.rightCols(N).swap(tempHW);
             }
             else
-                tempH.leftCols(7+N) << tempHC, tempHW;
+                tempH.leftCols(7+N) << tempHP, tempHW;
 
             float val = chi2(tempH, tempr, NavSRinv.bottomRightCorner(7+nDimOfWinSR,7+nDimOfWinSR));
             if (val<CHI2_THRESHOLD[M-1])
@@ -1038,6 +1041,11 @@ void Updater::update(const int nImageId,
 
     Localx.segment(nStateOffset,9) += dLocalx.segment(nErrorOffset,9);
 
+    mRci = QuatToRot(Localx.segment(10,4));
+    mtci = Localx.segment(14,3);
+    mRic = mRci.transpose();
+    mtic = -mRic*mtci;
+
     composition(nImageId, mFeatures, vActiveFeatureIDs, nDimOfWinx, nDimOfWinSR, Localx, LocalFactor);
 }
 
@@ -1131,20 +1139,10 @@ void Updater::composition(const int nImageId,
         int l1 = 3*nLostActiveFeatures+3*nActiveFeatures;
         int l2 = 3*nNewActiveFeatures;
 
-        Eigen::MatrixXf Jf, JG, JC, Hf, HG, HC;
+        Eigen::MatrixXf Jf, JG, JP, Hf, HG, HP;
         Jf.setZero(l2,l2);
         JG.setZero(l2,6);
-        JC.setZero(l2,7);
-
-        Eigen::Matrix3f mRci_fej = mRci;
-        Eigen::Vector3f mtci_fej = mtci;
-        Eigen::Matrix3f mRic_fej = mRic;
-        Eigen::Vector3f mtic_fej = mtic;
-
-        mRci = QuatToRot(Localx.segment(10,4));
-        mtci = Localx.segment(14,3);
-        mRic = mRci.transpose();
-        mtic = -mRic*mtci;
+        JP.setZero(l2,7);
 
         for (int i=0; i<nNewActiveFeatures; ++i)
         {
@@ -1166,16 +1164,16 @@ void Updater::composition(const int nImageId,
             epfinv_fej << cos(phi_fej)*sin(psi_fej), sin(phi_fej), cos(phi_fej)*cos(psi_fej);
 
             Eigen::Vector3f pfG = RkGT*(1./rho*mRic*epfinv+mtic-pkG);
-            Eigen::Vector3f pfG_fej = RkGT*(1./rho_fej*mRic_fej*epfinv_fej+mtic_fej-pkG);
+            Eigen::Vector3f pfG_fej = RkGT*(1./rho_fej*mRic*epfinv_fej+mtic-pkG);
 
             Eigen::Matrix<float,3,2> Jang;
             Jang << -sin(phi_fej)*sin(psi_fej), cos(phi_fej)*cos(psi_fej),
                      cos(phi_fej), 0,
                     -sin(phi_fej)*cos(psi_fej), -cos(phi_fej)*sin(psi_fej);
 
-            Jf.block(3*i,3*i,3,3) << 1./rho_fej*RkGT*mRic_fej*Jang, -1./pow(rho_fej,2)*RkGT*mRic_fej*epfinv_fej;
+            Jf.block(3*i,3*i,3,3) << 1./rho_fej*RkGT*mRic*Jang, -1./pow(rho_fej,2)*RkGT*mRic*epfinv_fej;
             JG.block(3*i,0,3,6) << -SkewSymm(pfG_fej)*RkGT, -RkGT;
-            JC.block(3*i,0,3,7) << -RkGT*mRic_fej*SkewSymm(1./rho_fej*epfinv_fej-mtci_fej), -RkGT*mRic_fej, Eigen::Vector3f::Zero();
+            JP.block(3*i,0,3,7) << -RkGT*mRic*SkewSymm(1./rho_fej*epfinv_fej-mtci), -RkGT*mRic, Eigen::Vector3f::Zero();
 
             pFeature->SetPosition(pfG);
             pFeature->SetFejPosition(pfG_fej);
@@ -1189,12 +1187,12 @@ void Updater::composition(const int nImageId,
         Eigen::ColPivHouseholderQR<Eigen::MatrixXf> qr(Jf);
         Hf = qr.inverse();
         HG = -Hf*JG;
-        HC = -Hf*JC;
+        HP = -Hf*JP;
 
         tempM = LocalFactor.block(l1,l1,l2,l2);
         LocalFactor.block(l1,l1,l2,l2) = tempM*Hf;
         LocalFactor.block(l1,LG,l2,6) += tempM*HG;
-        LocalFactor.block(l1,LC,l2,7) += tempM*HC;
+        LocalFactor.block(l1,LC,l2,7) += tempM*HP;
 
         ComposeQR(l1, l2, LocalFactor);
     }

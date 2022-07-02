@@ -28,14 +28,14 @@ namespace RVIO2
 
 FeatureDetector::FeatureDetector(const cv::FileStorage& fsSettings)
 {
+    mnImageCols = fsSettings["Camera.width"];
+    mnImageRows = fsSettings["Camera.height"];
+
     mnMinDistance = fsSettings["Tracker.nMinDist"];
     mnQualityLevel = fsSettings["Tracker.nQualLvl"];
 
     mnBlockSizeX = fsSettings["Tracker.nBlockSizeX"];
     mnBlockSizeY = fsSettings["Tracker.nBlockSizeY"];
-
-    mnImageCols = fsSettings["Camera.width"];
-    mnImageRows = fsSettings["Camera.height"];
 
     mnGridCols = mnImageCols/mnBlockSizeX;
     mnGridRows = mnImageRows/mnBlockSizeY;
@@ -46,7 +46,7 @@ FeatureDetector::FeatureDetector(const cv::FileStorage& fsSettings)
     mnBlocks = mnGridCols*mnGridRows;
 
     int nMaxFeatsPerImage = fsSettings["Tracker.nFeatures"];
-    mnMaxFeatsPerBlock = (float)nMaxFeatsPerImage/mnBlocks;
+    mnMaxFeatsPerBlock = nMaxFeatsPerImage/mnBlocks;
 
     mvvGrid.resize(mnBlocks);
 }

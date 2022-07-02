@@ -69,7 +69,7 @@ public:
     void track(const int nImageId, 
                const cv::Mat& image, 
                const Eigen::Matrix3f& RcG, 
-               const Eigen::Vector3f& tGc, 
+               const Eigen::Vector3f& tcG, 
                int nMapPtsNeeded, 
                std::unordered_map<int,Feature*>& mFeatures);
 
@@ -80,19 +80,19 @@ private:
     bool start(const int nImageId, 
                const cv::Mat& image, 
                const Eigen::Matrix3f& RcG, 
-               const Eigen::Vector3f& tGc, 
+               const Eigen::Vector3f& tcG, 
                std::unordered_map<int,Feature*>& mFeatures);
 
     void manage(const int nImageId, 
                 const cv::Mat& image, 
                 const Eigen::Matrix3f& RcG, 
-                const Eigen::Vector3f& tGc, 
+                const Eigen::Vector3f& tcG, 
                 const std::unordered_map<int,Feature*>& mFeatures);
 
     void preprocess(const int nImageId, 
                     const cv::Mat& image, 
                     const Eigen::Matrix3f& RcG, 
-                    const Eigen::Vector3f& tGc);
+                    const Eigen::Vector3f& tcG);
 
     void undistort(const std::vector<cv::Point2f>& src, 
                    std::vector<cv::Point2f>& dst);
@@ -150,7 +150,6 @@ private:
     bool mbRefreshVT;
 
     bool mbEnableSlam;
-
     bool mbEnableFilter;
     bool mbEnableEqualizer;
 
@@ -166,21 +165,21 @@ private:
     cv::Mat mK;
     cv::Mat mD;
 
-    std::vector<cv::Point2f> mvFeatCandidates;
-
-    std::vector<int> mvFeatIDsToTrack;
-    std::vector<cv::Point2f> mvFeatPtsToTrack;
-
     Eigen::Matrix3f mRx;
+    Eigen::Matrix3f mRr;
+
     std::list<Eigen::Matrix3f> mlCamOrientations;
     std::list<Eigen::Vector3f> mlCamPositions;
 
-    Eigen::Matrix3f mRr;
-    Eigen::MatrixXf PointsForRansac;
-
     std::unordered_map<int,std::vector<cv::Point2f> > mmFeatTrackingHistory;
+    std::vector<int> mvFeatIDsToTrack;
+    std::vector<cv::Point2f> mvFeatPtsToTrack;
+
     std::vector<int> mvFeatIDsInactive;
     std::vector<int> mvFeatIDsLoseTrack;
+
+    Eigen::MatrixXf PointsForRansac;
+    std::vector<cv::Point2f> mvFeatCandidates;
 
     Ransac* mpRansac;
     FeatureDetector* mpFeatureDetector;
@@ -189,6 +188,7 @@ private:
     ros::NodeHandle mTrackerNode;
     ros::Publisher mTrackPub;
     ros::Publisher mNewerPub;
+
     bool mbShowTrack;
     bool mbShowNewer;
 };

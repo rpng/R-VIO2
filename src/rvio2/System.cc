@@ -67,8 +67,8 @@ System::System(const std::string& strSettingsFile)
 
     mnMaxSlamPoints = fsSettings["Tracker.nMaxSlamPoints"];
 
-    mnAngleThreshold = fsSettings["INI.nAngleThrd"];
-    mnLengthThreshold = fsSettings["INI.nLengthThrd"];
+    mnAngleThrd = fsSettings["INI.nAngleThrd"];
+    mnLengthThrd = fsSettings["INI.nLengthThrd"];
 
     mnGravity = fsSettings["IMU.nG"];
     mnImuRate = fsSettings["IMU.dps"];
@@ -99,7 +99,6 @@ System::System(const std::string& strSettingsFile)
     mtci = -mRci*tic;
 
     mbIsInitialized = false;
-    mbFoundLoopClosure = false;
 
     mpInputBuffer = new InputBuffer(fsSettings);
     mpPropagator = new Propagator(fsSettings);
@@ -134,6 +133,7 @@ bool System::initialize(const ImageData& Image, const std::vector<ImuData>& vImu
     static double Dt = 0;
 
     static Eigen::Vector3f wm_last;
+
     static cv::Mat im_last;
     static double im_last_timestamp;
 
@@ -155,7 +155,7 @@ bool System::initialize(const ImageData& Image, const std::vector<ImuData>& vImu
     }
 
     // Not move yet
-    if (ang.norm()*180./M_PI<mnAngleThreshold && len.norm()<mnLengthThreshold)
+    if (ang.norm()*180./M_PI<mnAngleThrd && len.norm()<mnLengthThrd)
     {
         for (const ImuData& data : vImuData)
         {
@@ -174,10 +174,6 @@ bool System::initialize(const ImageData& Image, const std::vector<ImuData>& vImu
         return false;
     }
 
-    Eigen::Vector3f g, bg, ba;
-    bg.setZero();
-    ba.setZero();
-
     if (nImuCount==0)
     {
         // Start in motion
@@ -190,6 +186,10 @@ bool System::initialize(const ImageData& Image, const std::vector<ImuData>& vImu
 
         return false;
     }
+
+    Eigen::Vector3f g, bg, ba;
+    bg.setZero();
+    ba.setZero();
 
     if (nImuCount==1)
     {
@@ -275,8 +275,7 @@ bool System::initialize(const ImageData& Image, const std::vector<ImuData>& vImu
     if (mbRecordOutputs)
     {
         Eigen::Vector4f qkG = Localx.segment(0,4);
-        Eigen::Vector3f pkG = Localx.segment(4,3);
-        Eigen::Vector3f pGk = -QuatToRot(QuatInv(qkG))*pkG;
+        Eigen::Vector3f pGk = -QuatToRot(QuatInv(qkG))*Localx.segment(4,3);
 
         fPoseResults << std::setprecision(19) << im_last_timestamp << " "
                      << pGk(0) << " " << pGk(1) << " " << pGk(2) << " "
@@ -314,11 +313,11 @@ void System::run()
     Eigen::Vector3f tkG = Rk*(Localx.segment(4,3)-tk);
 
     Eigen::Matrix3f RcG = mRci*RkG;
-    Eigen::Vector3f tGc = mRci*(-RkG.transpose()*tkG)+mtci;
+    Eigen::Vector3f tcG = mRci*tkG+mtci;
 
     int nMapPtsNeeded = mnMaxSlamPoints-mvActiveFeatureIDs.size();
 
-    mpTracker->track(nImageId, pMeasurements.first.Image, RcG, tGc, nMapPtsNeeded, mmFeatures);
+    mpTracker->track(nImageId, pMeasurements.first.Image, RcG, tcG, nMapPtsNeeded, mmFeatures);
 
     // Save local velocities
     Eigen::Vector3f w = pMeasurements.second.back().AngularVel-Localx.tail(6).head(3);
@@ -355,7 +354,8 @@ void System::run()
     mtci = Localx.segment(14,3);
     mnCamTimeOffset = Localx(17);
 
-    ROS_INFO("T_CI: %.6f %.6f %.6f %.6f %.6f %.6f %.6f", Localx(14), Localx(15), Localx(16), Localx(10), Localx(11), Localx(12), Localx(13));
+    ROS_INFO("T_CI: %.6f %.6f %.6f %.6f %.6f %.6f %.6f", Localx(14), Localx(15), Localx(16), 
+                                                         Localx(10), Localx(11), Localx(12), Localx(13));
     ROS_INFO("td: %.6f\n", mnCamTimeOffset);
 
     // Broadcast tf
