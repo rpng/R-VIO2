@@ -5,7 +5,7 @@ R-VIO2 is a novel square root information-based robocentric visual-inertial navi
 ![](rvio2.gif)
 
 If you find this work relevant to or use it for your research, please consider citing the following papers:
-- Zheng Huai and Guoquan Huang, **Square-Root Robocentric Visual-Inertial Odometry with Online Spatiotemporal Calibration**, *IEEE Robotics and Automation Letters (RA-L)*, 2022: (*to appear*).
+- Zheng Huai and Guoquan Huang, **Square-Root Robocentric Visual-Inertial Odometry with Online Spatiotemporal Calibration**, *IEEE Robotics and Automation Letters (RA-L)*, 2022: [download](https://ieeexplore.ieee.org/document/9830847).
 ```
 @article{huai2022square,
   title     = {Square-root robocentric visual-inertial odometry with online spatiotemporal calibration},
@@ -15,7 +15,7 @@ If you find this work relevant to or use it for your research, please consider c
   publisher = {IEEE}
 }
 ```
-- Zheng Huai and Guoquan Huang, **Markov Parallel Tracking and Mapping for Probabilistic SLAM**, *IEEE International Conference on Robotics and Automation (ICRA)*, 2021: [download](https://ieeexplore.ieee.org/abstract/document/9561238).
+- Zheng Huai and Guoquan Huang, **Markov Parallel Tracking and Mapping for Probabilistic SLAM**, *IEEE International Conference on Robotics and Automation (ICRA)*, 2021: [download](https://ieeexplore.ieee.org/document/9561238).
 ```
 @inproceedings{huai2021markov,
   title     = {Markov parallel tracking and mapping for probabilistic SLAM},
