@@ -8,11 +8,14 @@ If you find this work relevant to or use it for your research, please consider c
 - Zheng Huai and Guoquan Huang, **Square-Root Robocentric Visual-Inertial Odometry with Online Spatiotemporal Calibration**, *IEEE Robotics and Automation Letters (RA-L)*, 2022: [download](https://ieeexplore.ieee.org/document/9830847).
 ```
 @article{huai2022square,
-  title     = {Square-root robocentric visual-inertial odometry with online spatiotemporal calibration},
-  author    = {Huai, Zheng and Huang, Guoquan},
-  journal   = {IEEE Robotics and Automation Letters (RA-L)},
-  year      = {2022},
-  publisher = {IEEE}
+  title={Square-root robocentric visual-inertial odometry with online spatiotemporal calibration},
+  author={Huai, Zheng and Huang, Guoquan},
+  journal={IEEE Robotics and Automation Letters},
+  volume={7},
+  number={4},
+  pages={9961--9968},
+  year={2022},
+  publisher={IEEE}
 }
 ```
 - Zheng Huai and Guoquan Huang, **Markov Parallel Tracking and Mapping for Probabilistic SLAM**, *IEEE International Conference on Robotics and Automation (ICRA)*, 2021: [download](https://ieeexplore.ieee.org/document/9561238).
