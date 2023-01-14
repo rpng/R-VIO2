@@ -18,6 +18,8 @@
 * along with R-VIO2. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <numeric>
+
 #include "Updater.h"
 #include "../util/numerics.h"
 

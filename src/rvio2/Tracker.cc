@@ -18,6 +18,8 @@
 * along with R-VIO2. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <numeric>
+
 #include <opencv2/opencv.hpp>
 
 #include <ros/package.h>
