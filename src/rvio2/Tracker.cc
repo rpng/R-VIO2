@@ -18,6 +18,8 @@
 * along with R-VIO2. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <numeric>
+
 #include <opencv2/opencv.hpp>
 
 #include <ros/package.h>
@@ -32,9 +34,9 @@ namespace RVIO2
 
 int featId = 0;
 
-CvScalar red = CV_RGB(255,64,64);
-CvScalar blue = CV_RGB(64,64,255);
-CvScalar green = CV_RGB(64,255,64);
+auto red = CV_RGB(255,64,64);
+auto blue = CV_RGB(64,64,255);
+auto green = CV_RGB(64,255,64);
 
 
 Tracker::Tracker(const cv::FileStorage& fsSettings)
