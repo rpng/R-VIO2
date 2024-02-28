@@ -262,6 +262,7 @@ void Tracker::VisualTracking(const int nImageId,
         {
             cv::Point2f pt = vFeatPtsUN.at(i);
             MatchesForRansac.col(i) << pt.x, pt.y, 1;
+            MatchesForRansac.col(i).normalize();
         }
 
         mpRansac->FindInliers(PointsForRansac, MatchesForRansac, mRr, nInliers, vInlierFlags);
