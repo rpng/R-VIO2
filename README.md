@@ -1,6 +1,6 @@
 # R-VIO2
 
-R-VIO2 is a novel square root information-based robocentric visual-inertial navigation algorithm using a monocular camera and a single IMU for consistent 3D motion tracking. It is developed based on our [robocentric VIO model](https://journals.sagepub.com/doi/pdf/10.1177/0278364919853361), while different with our previous work [R-VIO](https://github.com/rpng/R-VIO), we have derived and used i) our square-root robocentric formulation and ii) QR-based update combined with back substitution to improve the numerical stability and computational efficiency of the estimator. Moreover, the spatiotemporal calibration is performed online to robustify the performance of estimator in the presence of unknown parameter errors. Especially, this implementation can run in two modes: VIO or SLAM, where the former does not estimate any map points during the navigation (our *RA-L2022* paper), while the latter estimates a small set of map points in favor of localization (the frontend developed for our *ICRA2021* paper).
+R-VIO2 is a novel square root information-based robocentric visual-inertial navigation algorithm using a monocular camera and a single IMU for consistent 3D motion tracking. It is developed based on our [robocentric VIO model](https://journals.sagepub.com/doi/pdf/10.1177/0278364919853361), while different with our previous work [R-VIO](https://github.com/rpng/R-VIO), we have derived and used i) our square-root robocentric formulation and ii) QR-based update combined with back substitution to improve the numerical stability and computational efficiency of the estimator. Moreover, the spatiotemporal calibration is performed online to robustify the performance of estimator in the presence of unknown parameter errors. Especially, this implementation can run in two modes: VIO or SLAM, where the former only estimates a sliding window of consecutive relative poses during the navigation (our *RA-L2022* paper), while the latter additionally estimates a small set of map points in favor of localization and mapping (the frontend developed for our *TRO2024* paper).
 
 ![](rvio2.gif)
 
@@ -18,14 +18,16 @@ If you find this work relevant to or use it for your research, please consider c
   publisher={IEEE}
 }
 ```
-- Zheng Huai and Guoquan Huang, **Markov Parallel Tracking and Mapping for Probabilistic SLAM**, *IEEE International Conference on Robotics and Automation (ICRA)*, 2021: [download](https://ieeexplore.ieee.org/document/9561238).
+- Zheng Huai and Guoquan Huang, **A Consistent Parallel Estimation Framework for Visual-Inertial SLAM**, *IEEE Transactions on Robotics (T-RO)*, 2024: [download](https://ieeexplore.ieee.org/abstract/document/10609562).
 ```
-@inproceedings{huai2021markov,
-  title     = {Markov parallel tracking and mapping for probabilistic SLAM},
-  author    = {Huai, Zheng and Huang, Guoquan},
-  booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
-  pages     = {11661--11667},
-  year      = {2021}
+@article{huai2024consistent,
+  title={A Consistent Parallel Estimation Framework for Visual-Inertial SLAM},
+  author={Huai, Zheng and Huang, Guoquan},
+  journal={IEEE Transactions on Robotics},
+  volume={40},
+  pages={3734--3755},
+  year={2024},
+  publisher={IEEE}
 }
 ```
 
